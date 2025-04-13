@@ -13,7 +13,7 @@ class CalculatorWidget extends StatelessWidget {
 
   final Map<String, dynamic>? translations;
 
-  CalculatorWidget(this.translations);
+  CalculatorWidget(this.translations, {super.key});
 
   void total() {
     final price = double.tryParse(_controllerPrice.text) ?? 0;
@@ -90,7 +90,6 @@ class CalculatorWidget extends StatelessWidget {
             if (focusNodeNext != null) {
               FocusScope.of(context).requestFocus(focusNodeNext);
             }
-            ;
           }),
     );
   }
