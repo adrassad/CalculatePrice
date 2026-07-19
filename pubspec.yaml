@@ -1,40 +1,27 @@
 name: calculateprice_app
-description: "Calculate the best price app"
-
-publish_to: 'none' 
-
-version: 1.0.0+1
+description: Unit-price calculator — compare cost per weight and scale to a target quantity.
+publish_to: "none"
+version: 1.1.0+2
 
 environment:
-  sdk: ^3.6.1
+  sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  flutter_localizations: 
+  flutter_localizations:
     sdk: flutter
-  flutter_local_notifications: ^17.0.0
+  cupertino_icons: ^1.0.8
   flutter_bloc: ^9.1.0
   shared_preferences: ^2.2.2
-  
+
 dev_dependencies:
-  flutter_lints: ^3.0.1
-  
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
 flutter:
-
   uses-material-design: true
-
   assets:
     - assets/lang/
     - assets/icons/
-flutter_launcher_icons:
-  android: true
-  ios: true
-  macos: 
-    image_path: "assets/icons/app_icon.png"
-  web:
-    image_path: "assets/icons/app_icon.png"
-  image_path: "assets/icon/app_icon.png" 
-  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png" 
-  adaptive_icon_background: "assets/icon/app_icon_background.png"

@@ -1,42 +1,44 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/translation_repository.dart';
 import 'locale_event.dart';
 import 'locale_state.dart';
 
 class LocaleBloc extends Bloc<LocaleEvent, LocaleState> {
-  LocaleBloc()
-      : super(LocaleState(locale: const Locale('en'), isLoading: true)) {
+  LocaleBloc({
+    TranslationRepository? translationRepository,
+    Locale initialLocale = const Locale('en'),
+  })  : _translations = translationRepository ?? const TranslationRepository(),
+        super(LocaleState(locale: initialLocale, isLoading: true)) {
     on<LocaleChanged>(_onLocaleChanged);
-
-    // Вместо прямого вызова _loadInitialTranslations, вызываем событие
-    add(LocaleChanged(const Locale('en')));
+    add(LocaleChanged(initialLocale));
   }
+
+  final TranslationRepository _translations;
 
   Future<void> _onLocaleChanged(
-      LocaleChanged event, Emitter<LocaleState> emit) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    LocaleChanged event,
+    Emitter<LocaleState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true, clearError: true));
     try {
-      final translations = await _loadTranslations(event.locale);
-      emit(state.copyWith(
-          locale: event.locale, translations: translations, isLoading: false));
-    } catch (e) {
-      emit(state.copyWith(
-          isLoading: false, errorMessage: 'Ошибка загрузки перевода'));
-    }
-  }
-
-  Future<Map<String, dynamic>> _loadTranslations(Locale locale) async {
-    try {
-      final String jsonString = await rootBundle
-          .loadString('assets/lang/${locale.languageCode}.json');
-      return json.decode(jsonString);
-    } catch (e) {
-      debugPrint('Ошибка загрузки перевода: $e');
-      return {};
+      final map = await _translations.load(event.locale.languageCode);
+      emit(
+        state.copyWith(
+          locale: event.locale,
+          translations: map,
+          isLoading: false,
+          clearError: true,
+        ),
+      );
+    } catch (_) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load translations',
+        ),
+      );
     }
   }
 }

@@ -1,8 +1,8 @@
 {
-    "app_title": "Best Price Calculator",
-    "calculate": "Calculate",
-    "weight": "Weight",
-    "price": "Price",
-    "target_weight": "Target weight",    
-    "total_price": "Total price"
-  }
+  "app_title": "Best Price Calculator",
+  "calculate": "Calculate",
+  "weight": "Weight",
+  "price": "Price",
+  "target_weight": "Target weight",
+  "total_price": "Total price"
+}

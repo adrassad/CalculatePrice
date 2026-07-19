@@ -7,13 +7,12 @@ import 'presentation/blocs/locale_state.dart';
 import 'presentation/screens/home_screen.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized(); // ✅ Инициализация перед runApp()
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const CalculatePriceApp());
 }
 
-/// Виджет приложения
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CalculatePriceApp extends StatelessWidget {
+  const CalculatePriceApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +21,34 @@ class MyApp extends StatelessWidget {
       child: BlocBuilder<LocaleBloc, LocaleState>(
         builder: (context, state) {
           return MaterialApp(
-            darkTheme: ThemeData.dark(),
-            color: Colors.black,
-            title: 'Localized App',
+            title: 'Best Price Calculator',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF1B5E20),
+                brightness: Brightness.light,
+              ),
+              useMaterial3: true,
+            ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF1B5E20),
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+            ),
+            themeMode: ThemeMode.system,
             locale: state.locale,
-            supportedLocales: const [Locale('en', ''), Locale('ru', '')],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('ru'),
+            ],
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: const MyHomePage(),
+            home: const HomeScreen(),
           );
         },
       ),

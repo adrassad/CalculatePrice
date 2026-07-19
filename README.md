@@ -1,16 +1,47 @@
-# calculateprice_app
+# Best Price Calculator
 
-A new Flutter project.
+Flutter utility that scales a known unit price to a target weight.
 
-## Getting Started
+**Formula:** `total = price × target_weight ÷ weight`
 
-This project is a starting point for a Flutter application.
+Example: if 2 kg cost 10, then 5 kg cost 25.
 
-A few resources to get you started if this is your first Flutter project:
+## Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Unit-price scaling with validation (no divide-by-zero)
+- EN / RU UI
+- Local persistence of last inputs (`shared_preferences`)
+- Light / dark Material 3 theme
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Architecture
+
+```
+lib/
+  domain/          # Pure calculation (no Flutter UI deps)
+  data/            # Translation loading
+  presentation/    # Screens, widgets, BLoC
+```
+
+Business logic lives in `PriceCalculator` and is covered by unit tests.
+
+## Requirements
+
+- Flutter 3.27+ / Dart 3.6+
+
+## Run
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Test
+
+```bash
+flutter test
+flutter analyze
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

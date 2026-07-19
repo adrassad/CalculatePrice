@@ -1,129 +1,165 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../domain/price_calculator.dart';
+
 class CalculatorWidget extends StatefulWidget {
-  final Map<String, dynamic>? translations;
-  const CalculatorWidget(this.translations, {super.key});
+  const CalculatorWidget({
+    super.key,
+    required this.translations,
+  });
+
+  final Map<String, String> translations;
+
   @override
-  CalculatorWidgetState createState() => CalculatorWidgetState();
+  State<CalculatorWidget> createState() => _CalculatorWidgetState();
 }
 
-class CalculatorWidgetState extends State<CalculatorWidget> {
-  final _controllerWeight = TextEditingController();
-  final _controllerPrice = TextEditingController();
-  final _controllerWeightTarget = TextEditingController();
-  final _controllerPriceTotal = TextEditingController();
+class _CalculatorWidgetState extends State<CalculatorWidget> {
+  static const _keyWeight = 'saved_weight';
+  static const _keyPrice = 'saved_price';
+  static const _keyWeightTarget = 'saved_weight_target';
 
-  final _focusNodeWeight = FocusNode();
-  final _focusNodePrice = FocusNode();
-  final _focusNodeWeightTarget = FocusNode();
+  final _weightController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _targetWeightController = TextEditingController();
+  final _totalController = TextEditingController();
 
-  static const String _keyWeight = 'saved_weight';
-  static const String _keyPrice = 'saved_price';
-  static const String _keyWeightTarget = 'saved_weight_target';
-  static const String _keyPriceTotal = 'saved_price_total';
+  final _weightFocus = FocusNode();
+  final _priceFocus = FocusNode();
+  final _targetWeightFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _loadText();
+    unawaited(_restoreFields());
   }
 
-  void total() {
-    final price = double.tryParse(_controllerPrice.text) ?? 0;
-    final weight = double.tryParse(_controllerWeight.text) ?? 0;
-    final weightTarget = double.tryParse(_controllerWeightTarget.text) ?? 0;
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _priceController.dispose();
+    _targetWeightController.dispose();
+    _totalController.dispose();
+    _weightFocus.dispose();
+    _priceFocus.dispose();
+    _targetWeightFocus.dispose();
+    super.dispose();
+  }
 
-    if (weightTarget != 0) {
-      _controllerPriceTotal.text = (price * weightTarget / weight).toString();
-    } else {
-      _controllerPriceTotal.text = '';
+  Future<void> _restoreFields() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    _weightController.text = prefs.getString(_keyWeight) ?? '';
+    _priceController.text = prefs.getString(_keyPrice) ?? '';
+    _targetWeightController.text = prefs.getString(_keyWeightTarget) ?? '';
+    _recalculate();
+  }
+
+  Future<void> _persistFields() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyWeight, _weightController.text);
+    await prefs.setString(_keyPrice, _priceController.text);
+    await prefs.setString(_keyWeightTarget, _targetWeightController.text);
+  }
+
+  void _recalculate() {
+    final weight = PriceCalculator.parseField(_weightController.text);
+    final price = PriceCalculator.parseField(_priceController.text);
+    final target = PriceCalculator.parseField(_targetWeightController.text);
+
+    if (weight == null || price == null || target == null) {
+      _totalController.text = '';
+      return;
     }
-    _saveText();
+
+    final total = PriceCalculator.scaleToTarget(
+      weight: weight,
+      price: price,
+      targetWeight: target,
+    );
+
+    _totalController.text =
+        total == null ? '' : PriceCalculator.formatTotal(total);
+    unawaited(_persistFields());
   }
 
-  Future<void> _loadText() async {
-    final prefs = await SharedPreferences.getInstance();
-    _controllerWeight.text = prefs.getString(_keyWeight) ?? '';
-    _controllerPrice.text = prefs.getString(_keyPrice) ?? '';
-    _controllerWeightTarget.text = prefs.getString(_keyWeightTarget) ?? '';
-    _controllerPriceTotal.text = prefs.getString(_keyPriceTotal) ?? '';
-  }
-
-  Future<void> _saveText() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyWeight, _controllerWeight.text);
-    await prefs.setString(_keyPrice, _controllerPrice.text);
-    await prefs.setString(_keyWeightTarget, _controllerWeightTarget.text);
-    await prefs.setString(_keyPriceTotal, _controllerPriceTotal.text);
-  }
+  String _label(String key) => widget.translations[key] ?? key;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                _customTextField(
-                    context: context,
-                    controller: _controllerWeight,
-                    labelKey: "weight",
-                    focusNode: _focusNodeWeight,
-                    focusNodeNext: _focusNodePrice),
-                _customTextField(
-                    context: context,
-                    controller: _controllerPrice,
-                    labelKey: "price",
-                    focusNode: _focusNodePrice,
-                    focusNodeNext: _focusNodeWeightTarget),
-              ],
-            ),
-            Row(
-              children: [
-                _customTextField(
-                    context: context,
-                    controller: _controllerWeightTarget,
-                    labelKey: "target_weight",
-                    focusNode: _focusNodeWeightTarget,
-                    focusNodeNext: _focusNodeWeight),
-                _customTextField(
-                    context: context,
-                    controller: _controllerPriceTotal,
-                    labelKey: "total_price",
-                    readyOnly: true)
-              ],
-            ),
-          ],
-        ));
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _field(
+                controller: _weightController,
+                label: _label('weight'),
+                focusNode: _weightFocus,
+                nextFocus: _priceFocus,
+              ),
+              const SizedBox(width: 8),
+              _field(
+                controller: _priceController,
+                label: _label('price'),
+                focusNode: _priceFocus,
+                nextFocus: _targetWeightFocus,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _field(
+                controller: _targetWeightController,
+                label: _label('target_weight'),
+                focusNode: _targetWeightFocus,
+              ),
+              const SizedBox(width: 8),
+              _field(
+                controller: _totalController,
+                label: _label('total_price'),
+                readOnly: true,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget _customTextField(
-      {context,
-      required TextEditingController controller,
-      required String labelKey,
-      focusNode,
-      focusNodeNext,
-      readyOnly = false}) {
-    final label = widget.translations?[labelKey] ?? labelKey;
+  Widget _field({
+    required TextEditingController controller,
+    required String label,
+    FocusNode? focusNode,
+    FocusNode? nextFocus,
+    bool readOnly = false,
+  }) {
     return Expanded(
       child: TextField(
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,7}')),
-          ],
-          focusNode: focusNode,
-          controller: controller,
-          decoration: InputDecoration(labelText: label),
-          keyboardType: TextInputType.number,
-          readOnly: readyOnly,
-          onChanged: (_) => total(),
-          onSubmitted: (value) {
-            if (focusNodeNext != null) {
-              FocusScope.of(context).requestFocus(focusNodeNext);
-            }
-          }),
+        controller: controller,
+        focusNode: focusNode,
+        readOnly: readOnly,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*[.,]?\d{0,7}')),
+        ],
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+        onChanged: readOnly ? null : (_) => _recalculate(),
+        onSubmitted: (_) {
+          if (nextFocus != null) {
+            FocusScope.of(context).requestFocus(nextFocus);
+          }
+        },
+      ),
     );
   }
 }

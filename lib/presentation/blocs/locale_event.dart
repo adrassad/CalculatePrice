@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
-abstract class LocaleEvent {}
+@immutable
+sealed class LocaleEvent {
+  const LocaleEvent();
+}
 
-class LocaleChanged extends LocaleEvent {
+final class LocaleChanged extends LocaleEvent {
+  const LocaleChanged(this.locale);
+
   final Locale locale;
-  LocaleChanged(this.locale);
 }

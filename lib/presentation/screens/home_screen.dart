@@ -6,55 +6,66 @@ import '../blocs/locale_event.dart';
 import '../blocs/locale_state.dart';
 import '../widgets/calculator_widget.dart';
 
-/// Главная страница
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: BlocBuilder<LocaleBloc, LocaleState>(
+        title: BlocBuilder<LocaleBloc, LocaleState>(
+          builder: (context, state) {
+            if (state.isLoading) {
+              return const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              );
+            }
+            return Text(state.t('app_title'));
+          },
+        ),
+        actions: [
+          BlocBuilder<LocaleBloc, LocaleState>(
             builder: (context, state) {
-              if (state.isLoading) {
-                return const CircularProgressIndicator();
-              }
-              return Text(state.translations?["app_title"] ?? "App");
-            },
-          ),
-          actions: [
-            BlocBuilder<LocaleBloc, LocaleState>(builder: (context, state) {
+              final next =
+                  state.locale.languageCode == 'en' ? 'ru' : 'en';
               return IconButton(
-                icon: const Icon(Icons.language, color: Colors.white),
+                tooltip: next.toUpperCase(),
+                icon: const Icon(Icons.language),
                 onPressed: () {
                   context.read<LocaleBloc>().add(
-                        LocaleChanged(
-                          Locale(
-                              state.locale.languageCode == 'en' ? 'ru' : 'en'),
-                        ),
+                        LocaleChanged(Locale(next)),
                       );
                 },
               );
-            })
-          ]),
-      body: Center(
-        child: BlocBuilder<LocaleBloc, LocaleState>(
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const CircularProgressIndicator();
-            }
-            if (state.errorMessage != null) {
-              return Text('Ошибка: ${state.errorMessage}');
-            }
+            },
+          ),
+        ],
+      ),
+      body: BlocBuilder<LocaleBloc, LocaleState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state.errorMessage != null) {
             return Center(
-                child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CalculatorWidget(state.translations),
-              ],
-            ));
-          },
-        ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  state.errorMessage!,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: CalculatorWidget(translations: state.translations),
+            ),
+          );
+        },
       ),
     );
   }

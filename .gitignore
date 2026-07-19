@@ -1,14 +1,37 @@
-# Flutter/Dart
+# Flutter / Dart
 .dart_tool/
 .packages
+.pub-cache/
 .pub/
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
 .melos_tool/
+
+# IDE
 .idea/
 .vscode/
 *.iml
+*.swp
+*.tmp
+*.orig
+*.log
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+google-services.json
+GoogleService-Info.plist
+*.pem
+*.p12
+*.jks
+*.keystore
+key.properties
 
 # Android
 android/.gradle/
@@ -17,34 +40,24 @@ android/.settings/
 android/.project
 android/.classpath
 android/local.properties
-android/gradle.properties
+**/android/app/.cxx/
+**/android/**/CMakeCache.txt
 
-# iOS
+# iOS / macOS
 ios/Flutter/.last_build_id
 ios/Pods/
-ios/Runner.xcworkspace/
 ios/.symlinks/
 ios/Flutter/ephemeral/
-
-# macOS
 macos/Flutter/ephemeral/
 macos/Pods/
-macos/Runner.xcworkspace/
 
-# Web
-web/.dart_tool/
-web/.idea/
+# Icon / design scratch at repo root (canonical icons live in assets/icons/)
+*.icns
+*.iconset/
+/MyAppIcon.*
+/app_icon.png
+/[0-9a-f]*.ico/
 
-# VS Code & IntelliJ
-*.log
-*.tmp
-*.swp
-*.DS_Store
-*.orig
-*.lock
-
-# Firebase/Keys (если используешь)
-.env
-.env.*
-google-services.json
-GoogleService-Info.plist
+# Coverage / misc
+coverage/
+*.lcov
