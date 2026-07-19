@@ -1,1 +1,0 @@
-/Users/andreisharapov/development/calculateprice_app/build/app/intermediates/cxx/Debug/2g6c4v2s/obj/arm64-v8a
