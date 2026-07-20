@@ -1,0 +1,12 @@
+#!/bin/bash
+# Strip Cursor agent attribution from commit messages.
+# Install: ./scripts/setup-hooks.sh
+
+if [ -f "$1" ]; then
+  sed -i '' \
+    -e '/Co-authored-by:.*[Cc]ursor/d' \
+    -e '/Co-authored-by:.*cursoragent/d' \
+    -e '/Made-with: Cursor/d' \
+    -e '/cursoragent@cursor\.com/d' \
+    "$1"
+fi

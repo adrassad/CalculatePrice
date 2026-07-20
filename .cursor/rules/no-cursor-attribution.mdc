@@ -1,0 +1,8 @@
+---
+description: Never add Cursor attribution to commits or PRs
+alwaysApply: true
+---
+
+# No Co Attribution
+
+Never add `Co-authored-by: `, `Made-with: `, or any attribution to git commits, PR descriptions, or code comments.
